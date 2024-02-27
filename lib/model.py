@@ -1,6 +1,8 @@
+## means editing dense to tf.keras.layers.Dense
+
 import logging
 import tensorflow as tf
-from tensorflow.layers import dense
+## from tensorflow.layers import dense
 from lib.attention_wrapper import TemporalPatternAttentionCellWrapper
 
 
@@ -28,7 +30,8 @@ class PolyRNN:
 
         # rnn_inputs_embed: [batch_size, max_len, num_units]
         self.rnn_inputs_embed = tf.nn.relu(
-            dense(self.rnn_inputs, self.para.num_units))
+            tf.keras.layers.Dense(self.rnn_inputs, self.para.num_units))
+            ## dense(self.rnn_inputs, self.para.num_units))
 
         # all_rnn_states: [batch_size, max_len, num_units]
         # final_rnn_states: [LSTMStateTuple], len = num_layers
@@ -49,13 +52,16 @@ class PolyRNN:
         )
 
         # all_rnn_outputs: [batch_size, output_size]
-        self.all_rnn_outputs = dense(self.final_rnn_states,
-                                     self.para.output_size)
+        ## self.all_rnn_outputs = dense(self.final_rnn_states,
+        ##                              self.para.output_size)
+        self.all_rnn_outputs = tf.keras.layers.Dense(self.final_rnn_states,
+                                                     self.para.output_size)
 
         if self.para.highway > 0:
             reg_outputs = tf.transpose(
                 self.rnn_inputs[:, -self.para.highway:, :], [0, 2, 1])
-            reg_outputs = dense(reg_outputs, 1)
+            ## reg_outputs = dense(reg_outputs, 1)
+            reg_outputs = tf.keras.layers.Dense(reg_outputs, 1)
             self.all_rnn_outputs += tf.squeeze(reg_outputs)
 
         if self.para.mode == "train" or self.para.mode == "validation":
