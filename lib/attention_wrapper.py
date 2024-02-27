@@ -1,6 +1,6 @@
 import logging
 import tensorflow as tf
-from tensorflow.layers import dense
+## from tensorflow.layers import dense
 from tensorflow.python.ops import rnn_cell_impl
 from tensorflow.python.util import nest
 
@@ -20,7 +20,8 @@ class TemporalPatternAttentionMechanism():
 
             # w: [batch_size, 1, filter_num]
             w = tf.reshape(
-                dense(query, filter_num, use_bias=False), [-1, 1, filter_num])
+                tf.keras.layers.Dense(query, filter_num, use_bias=False), [-1, 1, filter_num])
+                ## dense(query, filter_num, use_bias=False), [-1, 1, filter_num])
             reshape_attn_vecs = tf.reshape(attn_states,
                                            [-1, attn_length, attn_size, 1])
             conv_vecs = tf.layers.conv2d(
@@ -44,7 +45,9 @@ class TemporalPatternAttentionMechanism():
                 tf.multiply(tf.reshape(a, [-1, feature_dim, 1]), conv_vecs),
                 [1])
             new_conv_vec = tf.reshape(d, [-1, filter_num])
-            new_attns = tf.layers.dense(
+            ## new_attns = tf.layers.dense(
+            ##    tf.concat([query, new_conv_vec], axis=1), attn_size)
+            new_attns = tf.keras.layers.Dense(
                 tf.concat([query, new_conv_vec], axis=1), attn_size)
             new_attn_states = tf.slice(attn_states, [0, 1, 0], [-1, -1, -1])
             return new_attns, new_attn_states
@@ -138,7 +141,9 @@ class TemporalPatternAttentionCellWrapper(rnn_cell_impl.RNNCell):
         input_size = self._input_size
         if input_size is None:
             input_size = inputs.get_shape().as_list()[1]
-        inputs = dense(
+        ## inputs = dense(
+        ##     tf.concat([inputs, attns], 1), input_size, use_bias=True)
+        inputs = tf.keras.layers.Dense(
             tf.concat([inputs, attns], 1), input_size, use_bias=True)
         lstm_output, new_state = self._cell(inputs, state)
 
@@ -151,7 +156,8 @@ class TemporalPatternAttentionCellWrapper(rnn_cell_impl.RNNCell):
             self._attn_vec_size)
 
         with tf.variable_scope("attn_output_projection"):
-            output = dense(
+            ## output = dense(
+            output = tf.keras.layers.Dense(
                 tf.concat([lstm_output, new_attns], 1),
                 self._attn_size,
                 use_bias=True)
